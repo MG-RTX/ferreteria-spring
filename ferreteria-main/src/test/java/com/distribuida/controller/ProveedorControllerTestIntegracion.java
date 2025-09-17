@@ -1,0 +1,62 @@
+package com.distribuida.controller;
+
+import com.distribuida.model.Proveedor;
+import com.distribuida.service.ProveedorService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SuppressWarnings("removal")
+@WebMvcTest(ProveedorController.class)
+public class ProveedorControllerTestIntegracion {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private ProveedorService proveedorService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    public void testFindAll() throws Exception {
+        Proveedor proveedor = new Proveedor(1,"Roberto","Firmino","Brasil","Sao Paulo","0978533515","ynwa@gmail.com");
+        Mockito.when(proveedorService.findAll()).thenReturn(List.of(proveedor));
+
+        mockMvc.perform(get("/proveedor"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].nombre").value("Roberto"));
+    }
+
+    @Test
+    public void testSave() throws Exception {
+        Proveedor proveedor = new Proveedor(1,"Roberto","Firmino","Brasil","Sao Paulo","0978533515","ynwa@gmail.com");
+
+        Mockito.when(proveedorService.save(any(Proveedor.class))).thenReturn(proveedor);
+
+        mockMvc.perform(post("/proveedor")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(proveedor))
+        )       .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nombre").value("Roberto"));
+    }
+
+    @Test
+    public void testDelete() throws Exception {
+        mockMvc.perform(delete("/autor/1")).andExpect(status().isNoContent());
+    }
+
+}
